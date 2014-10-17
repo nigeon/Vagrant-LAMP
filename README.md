@@ -2,21 +2,21 @@ Vagrant LAMP
 ============
 
 Vagrant LAMP machine including:
-    "recipe[apt]"
-    "recipe[openssl]"
-    "recipe[apache2]"
-    "recipe[apache2::mod_php5]"
-    "recipe[mysql]"
-    "recipe[mysql::server]"
-    "recipe[php]"
-    "recipe[php::module_mysql]"
-    "recipe[php::module_curl]"
-    "recipe[php::module_memcache]"
-    "recipe[php2]" #xdebug & pear Mail
-    "recipe[database::mysql]"
-    "recipe[apache2::vhosts]" #Virtual host creation
-    #"recipe[cakephpapp]", #Tmp directories permissions & cake schema import
-    "recipe[zip]"
+- "recipe[apt]"
+- "recipe[openssl]"
+- "recipe[apache2]"
+- "recipe[apache2::mod_php5]"
+- "recipe[mysql]"
+- "recipe[mysql::server]"
+- "recipe[php]"
+- "recipe[php::module_mysql]"
+- "recipe[php::module_curl]"
+- "recipe[php::module_memcache]"
+- "recipe[php2]" #xdebug & pear Mail
+- "recipe[database::mysql]"
+- "recipe[apache2::vhosts]" #Virtual host creation
+- #"recipe[cakephpapp]", #Tmp directories permissions & cake schema import
+- "recipe[zip]"
 
 
 Instructions
