@@ -22,9 +22,9 @@ Vagrant LAMP machine including:
 Instructions
 ------------
 
-1. Install vagrant (http://www.vagrantup.com/)
-2. Instal VirtualBox
+1. Install VirtualBox (https://www.virtualbox.org/)
+2. Install vagrant (http://www.vagrantup.com/)
 3. Clone this repo
-4. vagrant up
+4. "vagrant up" on this repo folder using the terminal
 5. Edit your hosts file to point lamp.local and www.lamp.local at 127.0.0.1
 6. Check your browser at http://lamp.local:8080/
