@@ -1,9 +1,9 @@
 #
-# Author:: Seth Chisamore <schisamo@opscode.com>
-# Cookbook Name:: php
+# Author:: Seth Chisamore <schisamo@chef.io>
+# Cookbook:: php
 # Provider:: pear_channel
 #
-# Copyright:: 2011, Opscode, Inc <legal@opscode.com>
+# Copyright:: 2011-2016, Chef Software, Inc <legal@chef.io>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,9 +20,13 @@
 
 # http://pear.php.net/manual/en/guide.users.commandline.channels.php
 
+use_inline_resources
+
 require 'chef/mixin/shell_out'
 require 'chef/mixin/language'
 include Chef::Mixin::ShellOut
+
+use_inline_resources
 
 def whyrun_supported?
   true
@@ -50,7 +54,7 @@ action :update do
   if exists?
     update_needed = false
     begin
-      updated_needed = true if shell_out("#{node['php']['pear']} search -c #{@new_resource.channel_name} NNNNNN").stdout =~ /channel-update/
+      update_needed = true if shell_out("#{node['php']['pear']} search -c #{@new_resource.channel_name} NNNNNN").stdout =~ /channel-update/
     rescue Chef::Exceptions::CommandTimeout
       # CentOS can hang on 'pear search' if a channel needs updating
       Chef::Log.info("Timed out checking if channel-update needed...forcing update of pear channel #{@new_resource}")
@@ -84,10 +88,8 @@ end
 private
 
 def exists?
-  begin
-    shell_out!("#{node['php']['pear']} channel-info #{@current_resource.channel_name}")
-    true
-  rescue Mixlib::ShellOut::ShellCommandFailed
-    false
-  end
+  shell_out!("#{node['php']['pear']} channel-info #{@current_resource.channel_name}")
+  true
+rescue Mixlib::ShellOut::ShellCommandFailed
+  false
 end

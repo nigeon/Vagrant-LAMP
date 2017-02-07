@@ -1,0 +1,1 @@
+default['locales']['locales']  = ['en_US','es_ES','de_DE','pt_PT','zh_CN']

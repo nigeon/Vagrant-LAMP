@@ -1,139 +1,122 @@
-Description
-===========
+# build-essential Cookbook
 
-Installs packages required for compiling C software from source. Use
-this cookbook if you wish to compile C programs, or install RubyGems
-with native extensions.
+[![Cookbook Version](http://img.shields.io/cookbook/v/build-essential.svg)][cookbook] [![Build Status](https://travis-ci.org/chef-cookbooks/build-essential.svg?branch=master)](https://travis-ci.org/chef-cookbooks/build-essential)
 
-Requirements
-============
+Installs packages required for compiling C software from source. Use this cookbook if you wish to compile C programs, or install RubyGems with native extensions. Contains a resource, 'build_essential', as as well as a default recipe that simply calls that same resource.
 
-Chef version 0.10.10+ and Ohai 0.6.12+ are required.
+## Requirements
 
-## Platform
+### Platforms
 
-Supported platforms by platform family:
+- Debian/Ubuntu
+- RHEL/CentOS/Scientific/Amazon/Oracle
+- openSUSE / SUSE Enterprise Linux
+- SmartOS
+- Fedora
+- Mac OS X 10.9+
+- FreeBSD
 
-* debian (debian, ubuntu)
-* fedora
-* mac_os_x (10.6+)
-* rhel (centos, redhat, amazon, scientific)
-* smartos
-* solaris2
-* omnios
+### Chef
 
-**Note for OmniOS**: Currently, OmniOS's Ruby package is built with
-GCC 4.6.3, and the path is hardcoded, as the gcc binaries are not
-installed in the default $PATH. This means that in order to install
-RubyGems into the "system" Ruby, one must install `developer/gcc46`.
-[An issue](https://github.com/omniti-labs/omnios-build/issues/19) is
-open upstream w/ OmniOS to rebuild the Ruby package with GCC 4.7.2.
+- Chef 12.1+
 
-## Cookbooks
+### Cookbooks
 
-This cookbook suggests the following external cookbooks:
+- seven_zip
+- mingw
 
-* [pkgin](http://community.opscode.com/cookbooks/pkgin) (someara) - SmartOS only
-* [pkgutil](http://community.opscode.com/cookbooks/pkgutil) (marthag) - Solaris 2 only
+**Note for Debian platform family:** On Debian platform-family systems, it is recommended that `apt-get update` be run, to ensure that the package cache is updated. It's not in the scope of this cookbook to do that, as it can [create a duplicate resource](https://tickets.chef.io/browse/CHEF-3694). We recommend using the [apt](https://supermarket.chef.io/cookbooks/apt) cookbook to do this.
 
-Attributes
-==========
+## Attributes
 
-* `node['build_essential']['compiletime']` - Whether the resources in
-the default recipe should be configured at the "Compile" phase of the
-Chef run. Defaults to false, see __Usage__ for more information.
-* `node['build_essential']['osx']['gcc_installer_url']` - The URL of
-  the OS X GCC package installer (.pkg).
-* `node['build_essential']['osx']['gcc_installer_checksum']` - The
-  SHA256 checksum of the OS X GCC installer.
+Attribute                                  |            Default            | Description
+------------------------------------------ | :---------------------------: | -----------------------------------------------------
+`node['build-essential']['compile_time']`  |            `false`            | Execute resources at compile time
+`node['build-essential']['msys2']['path']` | `#{ENV['SYSTEMDRIVE']\\msys2` | Destination for msys2 build tool chain (Windows only)
 
-Recipes
-=======
+## Usage
 
-The main entrypoint for this cookbook is the `default` recipe. This
-recipe includes a platform specific recipe based on the node's platform
-family.
+### Recipe Usage
 
-On Linux platforms (see __Platform__ above for a supported list of
-families), packages required to build C source projects are installed.
-This includes GCC, make, autconf and others. On Debian-family
-distributions, the apt-cache may need to be updated, especially during
-compile time installation. See __Usage__ for further information.
+The recipe simply calls the build_essential resource, but it ideal for adding to roles or node run lists.
 
-On Mac OS X, the GCC standalone installer by Kenneth Reitz is
-installed. Note that this is *not* the Xcode CLI package, as that does
-not include all programs and headers required to build some common
-GNU-style C projects, such as those that are available from projects
-such as MacPorts or Homebrew. Changing the attributes for the GCC
-installer URL and checksum to the Xcode values may work, but this is
-untested.
+Include the build-essential recipe in your run list:
 
-Usage
-=====
+```sh
+knife node run_list add NODE "recipe[build-essential::default]"
+```
 
-Simply include the `build-essential` and the required tools will be
-installed to the system, and later recipes will be able to compile
-software from C source code.
+or add the build-essential recipe as a dependency and include it from inside another cookbook:
 
-For RubyGems that include native C extensions you wish to use with
-Chef, you should do two things.
+```ruby
+include_recipe 'build-essential::default'
+```
 
-0. Ensure that the C libraries, include files and other assorted "dev"
-type packages are installed. You should do this in the compile phase
-after the build-essential recipe.
-1. Use the `chef_gem` resource in your recipes. This requires Chef version 0.10.10+.
-2. Set the `compiletime` attribute in roles where such recipes are
-required. This will ensure that the build tools are available to
-compile the RubyGems' extensions, as `chef_gem` happens during the
-compile phase, too.
+### Gems with C extensions
 
-Example installation of a devel package at compile-time in a recipe:
+For RubyGems that include native C extensions you wish to use with Chef, you should do the following.
 
-    package "mypackage-dev" do
-      action :nothing
-    end.run_action(:install)
+- Set the `compile_time` attribute to true in your wrapper cookbook or role:
 
-Example use of `chef_gem`:
+  ```ruby
+   # Wrapper attribute
+   default['build-essential']['compile_time'] = true
+  ```
 
-    chef_gem "mygem"
+  ```ruby
+   # Role
+   default_attributes(
+     'build-essential' => {
+       'compile_time' => true
+     }
+   )
+  ```
 
-Example role:
+- Ensure that the C libraries, which include files and other assorted "dev"
 
-    name "myapp"
-    run_list(
-      "recipe[build-essential]",
-      "recipe[myapp]"
-    )
-    default_attributes(
-      "build_essential" => {
-        "compiletime" => true
-      }
-    )
+  type packages, are installed in the compile phase after the build-essential
 
-The compile time option (via the attribute) is to ensure that the
-proper packages are available at the right time in the Chef run. It is
-recommended that the build-essential recipe appear early in the run
-list.
+  recipe is executed. For example:
 
-The Chef wiki has documentation on
-[the anatomy of a chef run](http://wiki.opscode.com/display/chef/Anatomy+of+a+Chef+Run).
+  ```ruby
+   include_recipe 'build-essential::default'
 
-Limitations
-===========
+   package('mypackage-devel') { action :nothing }.run_action(:install)
+  ```
 
-It is not in the scope of this cookbook to handle installing the
-required headers for individual software projects in order to compile
-them, or to compile RubyGems with native C extensions. You should
-create a cookbook for handling that.
+- Use the `chef_gem` resource in your recipe to install the gem with the native
 
-License and Author
-==================
+  extension:
 
-Author:: Joshua Timberman (<joshua@opscode.com>)
-Author:: Seth Chisamore (<schisamo@opscode.com>)
+  ```ruby
+   chef_gem 'gem-with-native-extension'
+  ```
 
-Copyright 2009-2011, Opscode, Inc. (<legal@opscode.com>)
+### Resource Usage
 
+The cookbook includes a resource 'build_essential' that can be included in your cookbook to install the necessary build-essential packages
+
+Simple package installation during the client run:
+
+```ruby
+build_essential 'some name you choose'
+```
+
+Package installation during the compile phase:
+
+```ruby
+build_essential 'some name you choose' do
+  compile_time false
+end
+```
+
+## License & Authors
+
+**Author:** Cookbook Engineering Team ([cookbooks@chef.io](mailto:cookbooks@chef.io))
+
+**Copyright:** 2009-2016, Chef Software, Inc.
+
+```
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -145,3 +128,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+```
+
+[cookbook]: https://supermarket.chef.io/cookbooks/build-essential
+[travis]: http://travis-ci.org/chef-cookbooks/build-essential

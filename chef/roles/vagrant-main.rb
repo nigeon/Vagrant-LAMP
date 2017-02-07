@@ -1,5 +1,4 @@
-# Name of the role should match the name of the file
-name "vagrant-main"
+name "vagrant_main"
 
 default_attributes(
     "build_essential" => {
@@ -8,33 +7,30 @@ default_attributes(
 )
 
 override_attributes(
-    "mysql" => {
-        "server_root_password" => '123123',
-        "server_repl_password" => '123123',
-        "server_debian_password" => '123123',
-        "allow_remote_root" => true
-    },
     "apache" => {
         "user"  => "vagrant",
-        "group" => "vagrant"
+        "group" => "vagrant",
+        "listen" => ["80", "443"]
+    },
+    "mysql" => {
+        "server_root_password" => '123123',
+        "allow_remote_root" => true
     }
 )
 
-# Run list function we mentioned earlier
 run_list(
     "recipe[apt]",
     "recipe[openssl]",
     "recipe[apache2]",
     "recipe[apache2::mod_php5]",
-    "recipe[mysql]",
-    "recipe[mysql::server]",
+    "recipe[apache2::mod_rewrite]",
+    "recipe[apache2::mod_ssl]",
     "recipe[php]",
-    "recipe[php::module_mysql]",
-    "recipe[php::module_curl]",
-    "recipe[php::module_memcache]",
-    "recipe[php2]", #xdebug & pear Mail
-    "recipe[database::mysql]",
-    "recipe[apache2::vhosts]", #Virtual host creation
-    #"recipe[cakephpapp]", #Tmp directories permissions & cake schema import
-    "recipe[zip]"
+    "recipe[php2]", #Php modules (mysql,curl,memcache,gf,xdebug & pear Mail)
+    "recipe[composer]",
+    "recipe[gettext]",
+    "recipe[locales]",
+    "recipe[zip]",
+    "recipe[apache::vhosts]",
+    "recipe[database::mysql]"
 )

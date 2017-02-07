@@ -1,9 +1,9 @@
 #
-# Author:: Seth Chisamore <schisamo@opscode.com>
-# Cookbook Name:: php
+# Author:: Seth Chisamore <schisamo@chef.io>
+# Cookbook:: php
 # Resource:: pear_channel
 #
-# Copyright:: 2011, Opscode, Inc <legal@opscode.com>
+# Copyright:: 2011-2016, Chef Software, Inc <legal@chef.io>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,11 @@
 default_action :discover
 actions :discover, :add, :update, :remove
 
-attribute :channel_name, :kind_of => String, :name_attribute => true
-attribute :channel_xml, :kind_of => String
+state_attrs :channel_name,
+            :channel_xml
+
+attribute :channel_name, kind_of: String, name_attribute: true
+attribute :channel_xml, kind_of: String
 
 # TODO: add authenticated channel support!
 # attribute :username, :kind_of => String

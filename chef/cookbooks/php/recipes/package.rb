@@ -1,10 +1,10 @@
 #
-# Author::  Seth Chisamore (<schisamo@opscode.com>)
-# Author::  Lucas Hansen (<lucash@opscode.com>)
-# Cookbook Name:: php
+# Author::  Seth Chisamore (<schisamo@chef.io>)
+# Author::  Lucas Hansen (<lucash@chef.io>)
+# Cookbook:: php
 # Recipe:: package
 #
-# Copyright 2013, Opscode, Inc.
+# Copyright:: 2013-2016, Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,16 +23,16 @@ if platform?('windows')
 
   include_recipe 'iis::mod_cgi'
 
-  install_dir = File.expand_path(node['php']['conf_dir']).gsub('/', '\\')
+  install_dir = File.expand_path(node['php']['conf_dir']).tr('/', '\\')
   windows_package node['php']['windows']['msi_name'] do
     source node['php']['windows']['msi_source']
     installer_type :msi
 
-    options %W[
-          /quiet
-          INSTALLDIR="#{install_dir}"
-          ADDLOCAL=#{node['php']['packages'].join(',')}
-    ].join(' ')
+    options %W(
+      /quiet
+      INSTALLDIR="#{install_dir}"
+      ADDLOCAL=#{node['php']['packages'].join(',')}
+    ).join(' ')
   end
 
   # WARNING: This is not the out-of-the-box go-pear.phar. It's been modified to patch this bug:
@@ -58,16 +58,9 @@ else
   node['php']['packages'].each do |pkg|
     package pkg do
       action :install
+      options node['php']['package_options']
     end
   end
 end
 
-template "#{node['php']['conf_dir']}/php.ini" do
-  source 'php.ini.erb'
-  unless platform?('windows')
-    owner 'root'
-    group 'root'
-    mode '0644'
-  end
-  variables(:directives => node['php']['directives'])
-end
+include_recipe 'php::ini'
